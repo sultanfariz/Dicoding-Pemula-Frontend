@@ -119,7 +119,7 @@ function addBook() {
   const title = document.getElementById('inputBookTitle').value;
   const author = document.getElementById('inputBookAuthor').value;
   const year = document.getElementById('inputBookYear').value;
-  const isComplete = document.getElementById('inputBookIsComplete').value;
+  const isComplete = document.getElementById('inputBookIsComplete').checked;
  
   const generatedID = generateId();
   const bookObject = generateBookObject(generatedID, title, author, year, isComplete);
