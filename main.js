@@ -1,4 +1,4 @@
-const books = [];
+let books = [];
 const RENDER_EVENT = 'render-bookshelf';
 const SAVED_EVENT = 'saved-bookshelf';
 const STORAGE_KEY = 'BOOKSHELF_APPS';
@@ -43,6 +43,9 @@ function findBook(bookId) {
 }
 
 function findBookByTitle(title) {
+  loadDataFromStorage();
+  if(title === '') return books;
+
   let regex = new RegExp(title, 'i');
   let result = [];
   for (const bookItem of books) {
@@ -50,7 +53,7 @@ function findBookByTitle(title) {
       result.push(bookItem);
     }
   }
-  return null;
+  return result;
 }
 
 function findBookIndex(bookId) {
@@ -71,7 +74,7 @@ function addBookToCompleted(bookId) {
   bookTarget.isComplete = true;
   document.dispatchEvent(new Event(RENDER_EVENT));
   saveData();
-  window.alert(`Buku dengan judul ${bookTarget.title} berhasil dipindahkan ke daftar sudah selesai dibaca`);
+  window.alert(`Buku dengan judul ${bookTarget.title} berhasil dipindahkan ke daftar sudah selesai dibaca.`);
 }
  
 function undoBookFromCompleted(bookId) {
@@ -82,7 +85,7 @@ function undoBookFromCompleted(bookId) {
   bookTarget.isComplete = false;
   document.dispatchEvent(new Event(RENDER_EVENT));
   saveData();
-  window.alert(`Buku dengan judul ${bookTarget.title} berhasil dipindahkan ke daftar belum selesai dibaca`);
+  window.alert(`Buku dengan judul ${bookTarget.title} berhasil dipindahkan ke daftar belum selesai dibaca.`);
 }
 
 function removeBook(bookId) {
@@ -91,14 +94,25 @@ function removeBook(bookId) {
     id: books[bookIndex].id,
     title: books[bookIndex].title,
   }
-  window.confirm(`Apakah anda yakin ingin menghapus buku dengan id ${bookData.id} dan judul ${bookData.title}?`);
+  
+  // ask confirmation
+  let confirm = window.confirm(`Apakah anda yakin ingin menghapus buku dengan id ${bookData.id} dan judul ${bookData.title}?`);
  
-  if (bookIndex !== -1) {
+  if (bookIndex !== -1 && confirm) {
     books.splice(bookIndex, 1);
     document.dispatchEvent(new Event(RENDER_EVENT));
     saveData();
     window.alert(`Buku dengan judul ${bookData.title} berhasil dihapus!`);
   }
+}
+
+function searchBook() {
+  const title = document.getElementById('searchBookTitle').value;
+  books = findBookByTitle(title);
+ 
+  document.dispatchEvent(new Event(RENDER_EVENT));
+  if (books.length === 0)
+    window.alert(`Buku dengan judul ${title} tidak ditemukan!`);
 }
 
 function addBook() {
@@ -172,12 +186,7 @@ function makeBook(bookObject) {
 function loadDataFromStorage() {
   const serializedData = localStorage.getItem(STORAGE_KEY);
   let data = JSON.parse(serializedData);
- 
-  if (data !== null) {
-    for (const book of data) {
-      books.push(book);
-    }
-  }
+  books = data;
  
   document.dispatchEvent(new Event(RENDER_EVENT));
 }
@@ -206,8 +215,13 @@ document.addEventListener('DOMContentLoaded', function () {
   const submitForm = document.getElementById('inputBook');
   submitForm.addEventListener('submit', function (event) {
     event.preventDefault();
-    console.log('submitted');
     addBook();
+  });
+
+  const searchForm = document.getElementById('searchBook');
+  searchForm.addEventListener('submit', function (event) {
+    event.preventDefault();
+    searchBook();
   });
 
   if (isStorageExist()) {
