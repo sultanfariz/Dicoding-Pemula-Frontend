@@ -186,7 +186,8 @@ function makeBook(bookObject) {
 function loadDataFromStorage() {
   const serializedData = localStorage.getItem(STORAGE_KEY);
   let data = JSON.parse(serializedData);
-  books = data;
+  if(data !== null) books = data;
+  else books = [];
  
   document.dispatchEvent(new Event(RENDER_EVENT));
 }
