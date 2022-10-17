@@ -1,4 +1,5 @@
 let books = [];
+let searchedBooks = [];
 const RENDER_EVENT = 'render-bookshelf';
 const SAVED_EVENT = 'saved-bookshelf';
 const STORAGE_KEY = 'BOOKSHELF_APPS';
@@ -43,8 +44,7 @@ function findBook(bookId) {
 }
 
 function findBookByTitle(title) {
-  loadDataFromStorage();
-  if(title === '') return books;
+  if(title === '') return [];
 
   let regex = new RegExp(title, 'i');
   let result = [];
@@ -57,6 +57,7 @@ function findBookByTitle(title) {
 }
 
 function findBookIndex(bookId) {
+  loadDataFromStorage();
   for (const index in books) {
     if (books[index].id === bookId) {
       return index;
@@ -108,11 +109,12 @@ function removeBook(bookId) {
 
 function searchBook() {
   const title = document.getElementById('searchBookTitle').value;
-  books = findBookByTitle(title);
+  searchedBooks = findBookByTitle(title);
  
   document.dispatchEvent(new Event(RENDER_EVENT));
-  if (books.length === 0)
-    window.alert(`Buku dengan judul ${title} tidak ditemukan!`);
+  if (searchedBooks.length === 0 && title !== '') {
+    window.alert(`Buku dengan judul ${title} tidak ditemukan.`);
+  }
 }
 
 function addBook() {
@@ -198,13 +200,24 @@ document.addEventListener(RENDER_EVENT, function () {
 
   const completedBookList = document.getElementById('completeBookshelfList');
   completedBookList.innerHTML = '';
- 
-  for (const bookItem of books) {
-    const bookElement = makeBook(bookItem);
-    if(!bookItem.isComplete)
-      uncompletedBookList.append(bookElement);
-    else
-      completedBookList.append(bookElement);
+
+  if(searchedBooks.length > 0) {
+    for (const book of searchedBooks) {
+      const bookElement = makeBook(book);
+      if (book.isComplete) {
+        completedBookList.append(bookElement);
+      } else {
+        uncompletedBookList.append(bookElement);
+      }
+    }
+  } else {
+    for (const bookItem of books) {
+      const bookElement = makeBook(bookItem);
+      if(!bookItem.isComplete)
+        uncompletedBookList.append(bookElement);
+      else
+        completedBookList.append(bookElement);
+    }
   }
 });
 
